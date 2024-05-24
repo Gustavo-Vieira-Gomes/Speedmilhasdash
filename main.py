@@ -5,6 +5,9 @@ from cadastrar_emissao import formulario_de_cadastro
 from ver_emissoes import ver_emissions
 import datetime
 from spreadsheets_conn import *
+import dotenv
+
+dotenv.load_dotenv()
 
 COOKIE_EXPIRY_DAYS = 180
 
