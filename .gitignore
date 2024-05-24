@@ -1,0 +1,6 @@
+__pycache__
+\.streamlit
+.venv
+.env
+rasc.py
+speedmilhas_credentials.json
