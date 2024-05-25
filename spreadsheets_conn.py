@@ -7,7 +7,9 @@ import toml
 
 def cria_secrets_file():
     with open('secrets.toml', 'w+') as tom_file:
-        toml.dump(os.environ.get('secrets'), tom_file)
+        dict_ = os.environ.get('secrets')
+        st.write(dict_)
+        secrets = toml.loads()
 
 
 def pegar_planilha(worksheet: str, spreadsheet: str) -> pd.DataFrame:
