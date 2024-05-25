@@ -10,7 +10,7 @@ def cria_secrets_file():
     with open('secrets.toml', 'w+') as tom_file:
         dict_ = os.environ.get('secrets')
         dict_ = json.loads(dict_)
-        secrets = toml.dump(dict_)
+        secrets = toml.dump(dict_, tom_file)
 
 
 def pegar_planilha(worksheet: str, spreadsheet: str) -> pd.DataFrame:
