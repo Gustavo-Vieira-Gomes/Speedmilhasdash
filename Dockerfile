@@ -1,7 +1,5 @@
 FROM python:3.10
 
-ENV PYTHONUNBUFFERED True
-
 WORKDIR /app
 COPY . ./
 
