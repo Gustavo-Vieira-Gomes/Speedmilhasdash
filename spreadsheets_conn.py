@@ -7,7 +7,7 @@ import toml
 import json
 
 def cria_secrets_file():
-    with open('/app/.streamlit/secrets.toml', 'w+') as tom_file:
+    with open('secrets.toml', 'w+') as tom_file:
         dict_ = os.environ.get('secrets')
         dict_ = json.loads(dict_)
         toml.dump(dict_, tom_file)
