@@ -9,6 +9,8 @@ import dotenv
 
 dotenv.load_dotenv()
 
+cria_secrets_file()
+
 COOKIE_EXPIRY_DAYS = 180
 
 def configure_page():

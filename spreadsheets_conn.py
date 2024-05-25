@@ -3,6 +3,11 @@ from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 import datetime
 import os
+import toml
+
+def cria_secrets_file():
+    with open('secrets.toml', 'w+') as tom_file:
+        toml.dump(os.environ.get('secrets'), tom_file)
 
 
 def pegar_planilha(worksheet: str, spreadsheet: str) -> pd.DataFrame:
