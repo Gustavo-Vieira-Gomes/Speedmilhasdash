@@ -4,11 +4,12 @@ import pandas as pd
 import datetime
 import os
 import toml
+import json
 
 def cria_secrets_file():
     with open('secrets.toml', 'w+') as tom_file:
         dict_ = os.environ.get('secrets')
-        st.write(dict_)
+        dict_ = json.loads(dict_)
         secrets = toml.loads(dict_)
 
 
