@@ -6,6 +6,7 @@ import os
 import toml
 import json
 
+@st.cache_data(show_spinner=False)
 def cria_secrets_file():
     with open('/app/.streamlit/secrets.toml', 'w+') as tom_file:
         dict_ = os.environ.get('secrets')
@@ -39,7 +40,7 @@ def concatenar_planliha_de_custos_faturamento() -> pd.DataFrame:
     faturamento.rename(columns={'Carimbo de data/hora': 'Data da Emissao', 'Valor total da venda\n': 'Total Venda', 'Quantidade de Passageiros': 'CPFs', 'Taxas De Embarque em REAL ( Dolar e Euro converter para real )': 'Taxas De Embarque', 'Quem Emitiu': 'Emitido por'}, inplace=True)
     faturamento = faturamento[['Data da Emissao', 'Cliente', 'Localizador', 'Cia', 'Quantidade de Milhas', 'Taxas De Embarque', 'Total Venda', 'CPFs', 'Emitido por', 'Quem pagou as taxas', 'Titular', 'Login', 'Senha']]
     faturamento.drop_duplicates(subset='Localizador',keep='last', inplace=True)
-    faturamento.loc[:, 'Data da Emissao'] = faturamento['Data da Emissao'].apply(lambda x: datetime.datetime.strptime(str(x), '%d/%m/%Y %H:%M:%S'))
+    faturamento.loc[:, 'Data da Emissao'] = faturamento['Data da Emissao'].apply(lambda x: datetime.datetime.strptime(str(x), '%d/%m/%Y %H:%M:%S') if isinstance(x, str) else x)
     faturamento.set_index('Localizador', inplace=True)
     # PEGANDO CUSTO E EDITANDO DF
     custo.rename(columns={'TotalMilhas+Taxas':'Total Custo'}, inplace=True)
