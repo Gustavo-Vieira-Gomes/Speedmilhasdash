@@ -19,7 +19,7 @@ def cria_secrets_file():
 
 def pegar_planilha(worksheet: str, spreadsheet: str) -> pd.DataFrame:
     conn = st.connection('emissionsconnect', type=GSheetsConnection)
-    df = conn.read(spreadsheet=spreadsheet, worksheet=worksheet)
+    df = conn.read(spreadsheet=spreadsheet, worksheet=worksheet, ttl=0)
     try:
         df.drop(df.columns[df.columns.str.contains('unnamed',case = False)],axis = 1, inplace = True)
     except: pass
@@ -37,6 +37,7 @@ def concatenar_planliha_de_custos_faturamento() -> pd.DataFrame:
         faturamento = pegar_planilha(spreadsheet=os.environ.get('NOME_PLANILHA_FATURAMENTO'), worksheet='Cadastro de Emissoes')
         custo = pegar_planilha(spreadsheet=os.environ.get('NOME_PLANILHA_CUSTO'), worksheet='Fornecedores')
         voltas = pegar_planilha(spreadsheet=os.environ.get('NOME_PLANILHA_VOLTAS'), worksheet='2024')
+        df_debitos = pegar_planilha(spreadsheet=os.environ.get('NOME_PLANILHA_DEBITOS'), worksheet='Debitos').dropna(how='all')
         voltas_ = pd.DataFrame()
         for mes in range(0, month_index+1):
             try: df = pegar_planilha(spreadsheet=os.environ.get('NOME_PLANILHA_VOLTAS'), worksheet=meses[mes]).dropna(subset='Data')
@@ -87,7 +88,7 @@ def concatenar_planliha_de_custos_faturamento() -> pd.DataFrame:
     df['Lucro'] = df['Total Venda'] - df['Total Custo']
     df.loc[:, 'Cia'] = df['Cia'].apply(lambda x: str(x).title().strip())
     df.loc[:, 'Cliente'] = df['Cliente'].apply(lambda x: str(x).title().strip())
-    return df
+    return df, df_debitos
 
 @st.cache_data(ttl=600, show_spinner=False)
 def pesquisar_logins():

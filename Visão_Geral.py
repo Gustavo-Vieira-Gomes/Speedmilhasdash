@@ -5,7 +5,7 @@ import datetime
 from sidebar import sidebar_visao_geral
 
 
-def create_pie_chart(labels, values, hole=0.4, height=200):
+def create_pie_chart(labels, values, hole=0.4, height=200, annotation_func=lambda x: f'{int(x.sum()):0,}'.replace('.', '*').replace(',', '.').replace('*', ',')):
     """
     Cria um gráfico de pizza com os dados fornecidos.
     """
@@ -17,7 +17,7 @@ def create_pie_chart(labels, values, hole=0.4, height=200):
     )
     if hole:
         fig.update_layout(
-            annotations=[dict(text=f'{int(values.sum()):0,}'.replace('.', '*').replace(',', '.').replace('*', ','), x=0.5, y=0.5, font_size=15, showarrow=False)]
+            annotations=[dict(text=annotation_func(values), x=0.5, y=0.5, font_size=15, showarrow=False)]
         )
     return fig
 
@@ -89,7 +89,7 @@ def ranking_das_cias(df: pd.DataFrame):
     """
     Exibe o ranking das companhias por lucro, emissões ou faturamento.
     """
-    with st.container():
+    with st.container(border=True):
         df_grouped = df.groupby('Cia', sort=True).sum()
         radio = st.radio(
             'Deseja classificar as companhias por:', 
@@ -104,7 +104,7 @@ def ranking_das_cias(df: pd.DataFrame):
             df_sorted.set_index('Classificação', inplace=True)
             df_sorted[radio] = df_sorted[radio].apply(lambda x: f'R${x:,.2f}'.replace(',', '_').replace('.', ',').replace('_', '.') if radio != 'CPFs' else x)
             df_sorted.rename(columns={'CPFs': 'Nº Emissões', 'Total Venda': 'Faturamento'}, inplace=True)
-            st.dataframe(df_sorted, use_container_width=True, height=180)
+            st.dataframe(df_sorted, use_container_width=True, height=269)
         else:
             st.write('Nenhuma Emissão encontrada dentro dos filtros')
 
@@ -136,21 +136,22 @@ def clientes_sem_emitir(df: pd.DataFrame):
     """
     Exibe os clientes que não emitiram há um número específico de dias.
     """
-    num_dias_sem_emitir = st.text_input(label='Deseja ver clientes sem emitir há quantos dias?', value=7)
-    if num_dias_sem_emitir.isnumeric():
-        # Renomeando coluna para 'Última Emissão'
-        df.rename(columns={'Data da Emissao': 'Última Emissão'}, inplace=True)
-        
-        # Calculando a última emissão de cada cliente
-        ultima_emissao = df.groupby('Cliente')['Última Emissão'].max().sort_values(ascending=True).reset_index()
-        
-        # Filtrando os clientes que não emitiram nos últimos 'num_dias_sem_emitir' dias
-        agencias_filtradas = ultima_emissao[ultima_emissao['Última Emissão'] < datetime.datetime.today() - datetime.timedelta(int(num_dias_sem_emitir))]
-        # Convertendo a data para o formato de string
-        agencias_filtradas.loc[:, 'Última Emissão'] = agencias_filtradas['Última Emissão'].apply(lambda x: x.strftime('%d/%m/%Y'))
-        
-        # Exibindo os clientes
-        st.dataframe(agencias_filtradas, use_container_width=True, height=180, hide_index=True)
+    with st.container(border=True):
+        num_dias_sem_emitir = st.text_input(label='Deseja ver clientes sem emitir há quantos dias?', value=7)
+        if num_dias_sem_emitir.isnumeric():
+            # Renomeando coluna para 'Última Emissão'
+            df.rename(columns={'Data da Emissao': 'Última Emissão'}, inplace=True)
+            
+            # Calculando a última emissão de cada cliente
+            ultima_emissao = df.groupby('Cliente')['Última Emissão'].max().sort_values(ascending=True).reset_index()
+            
+            # Filtrando os clientes que não emitiram nos últimos 'num_dias_sem_emitir' dias
+            agencias_filtradas = ultima_emissao[ultima_emissao['Última Emissão'] < datetime.datetime.today() - datetime.timedelta(int(num_dias_sem_emitir))]
+            # Convertendo a data para o formato de string
+            agencias_filtradas.loc[:, 'Última Emissão'] = agencias_filtradas['Última Emissão'].apply(lambda x: x.strftime('%d/%m/%Y'))
+            
+            # Exibindo os clientes
+            st.dataframe(agencias_filtradas, use_container_width=True, height=253, hide_index=True)
 
 
 def metricas_voltas_canceladas(df: pd.DataFrame):
@@ -165,6 +166,17 @@ def metricas_voltas_canceladas(df: pd.DataFrame):
     col2.metric('Cancelamentos Terceirizados:', value=int(df[(df['Status'] != 'Cancelada') & (df['Status'] != 'A Cancelar') & (df['Status'] != 'Erro')]['num emit'].sum()))
     col3.metric('Voltas a Cancelar:', value=int(df[df['Status'] == 'A Cancelar']['num emit'].sum()))
     col4.metric('Erros:', value=int(df[df['Status'] == 'Erro']['num emit'].sum()))
+
+
+def debitos_clientes(df: pd.DataFrame):
+    df.loc[:, 'Debito'] = df.loc[:, 'Debito'].round(2)
+    fig = create_pie_chart(df['Cliente'], df['Debito'], height=280, annotation_func=lambda x: f'R${x.sum():0,.2f}'.replace('.', '*').replace(',', '.').replace('*', ','))
+    with st.container(border=True):
+        st.markdown("<h3 style='text-align: center;'>Total de Débitos dos Clientes:</h3>", unsafe_allow_html=True)
+        if not df.empty and df['Debito'].sum() != 0:
+            fig = st.plotly_chart(fig, config={'displayModeBar': False}, use_container_width=True)
+        else:
+            st.write('Nenhuma milha utilizada dentro dos filtros inseridos')
 
 
 def visao_geral():
@@ -197,14 +209,10 @@ def visao_geral():
         fat_evolution_chart(st.session_state['df'])
 
         coluna1, coluna2 = st.columns([0.6, 0.4])
-        tab_clientes, tab_cias = coluna1.container(border=True).tabs(['Clientes sem Emitir', 'Ranking das Companhias'])
-
+        with coluna1:
+            clientes_sem_emitir(st.session_state['df'])
+            ranking_das_cias(st.session_state['filtered_df'])
         # Exibindo gráficos e tabelas
         with coluna2:
+            debitos_clientes(st.session_state['df_debitos'])
             fat_total_pie_charts(st.session_state['filtered_df'])
-
-        # Exibindo clientes sem emitir e ranking das companhias
-        with tab_clientes:
-            clientes_sem_emitir(st.session_state['df'])
-        with tab_cias:
-            ranking_das_cias(st.session_state['filtered_df'])
