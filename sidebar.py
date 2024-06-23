@@ -1,6 +1,7 @@
 import streamlit as st
 import datetime
 import pandas as pd
+import pdb
 
 def filter_data(df: pd.DataFrame, date_range, client_filter, airline_filter, service_type=None):
     """Filtra os dados com base nos parâmetros fornecidos."""
@@ -19,7 +20,9 @@ def filter_data(df: pd.DataFrame, date_range, client_filter, airline_filter, ser
 
 def display_filters(df: pd.DataFrame, date_init_range: datetime.date, type_=1):
     """Exibe filtros na barra lateral."""
-    date_range = st.date_input(':calendar: Período de Análise', [date_init_range[0], date_init_range[1]], min_value=datetime.date(2023, 6, 1), key='periodkey')
+    pdb.set_trace()
+    date_range = st.date_input(':calendar: Período de Análise', value=[date_init_range[0], date_init_range[1]], min_value=datetime.date(2023, 6, 1), key='periodkey')
+    pdb.set_trace()
     client_options = ['GERAL'] + df['Cliente'].unique().tolist()
     airline_options = ['GERAL'] + df['Cia'].unique().tolist()
 
@@ -33,12 +36,12 @@ def sidebar_visao_geral(df: pd.DataFrame = None, date_init_range: datetime.date 
     with st.sidebar:
         st.header('SPEEDMILHAS')
         date_range, client_filter, airline_filter, service_type = display_filters(df, date_init_range)
-    
-    if len(date_range) == 2 and client_filter and airline_filter:
-        st.session_state['date_init_range'] = date_range
-        st.session_state['tipo_serviço'] = service_type
-        st.session_state['filtered_df'] = filter_data(df, date_range, client_filter, airline_filter, service_type)
-        st.session_state['df_voltas'] = df[df['Tipo'] == 'Volta']
+
+        if len(date_range) == 2 and client_filter and airline_filter:
+            st.session_state['date_init_range'] = date_range
+            st.session_state['tipo_serviço'] = service_type
+            st.session_state['filtered_df'] = filter_data(df, date_range, client_filter, airline_filter, service_type)
+            st.session_state['df_voltas'] = df[df['Tipo'] == 'Volta']
 
 
 def sidebar_cadastrar_emissao():
