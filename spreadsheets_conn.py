@@ -5,9 +5,6 @@ import datetime
 import os
 import toml
 import json
-import dotenv
-
-dotenv.load_dotenv()
 
 @st.cache_data(show_spinner=False)
 def cria_secrets_file():
@@ -20,12 +17,32 @@ def cria_secrets_file():
 def pegar_planilha(worksheet: str, spreadsheet: str) -> pd.DataFrame:
     conn = st.connection('emissionsconnect', type=GSheetsConnection)
     df = conn.read(spreadsheet=spreadsheet, worksheet=worksheet, ttl=0)
-    try:
-        df.drop(df.columns[df.columns.str.contains('unnamed',case = False)],axis = 1, inplace = True)
-    except: pass
-    try: df.rename(columns={'Reserva': 'Localizador'}, inplace=True)
-    except:pass
     return df
+
+def separar_dataframes(df:pd.DataFrame):
+        
+    empty_col_index = list()
+    for col in df.columns:
+        if df[col].isna().all():
+            empty_col_index.append(df.columns.get_loc(col))
+
+    # Dividindo o dataframe se uma coluna vazia foi encontrada
+    if empty_col_index is not None:
+        df1 = df.iloc[:, :empty_col_index[0]]
+        df2 = df.iloc[:, empty_col_index[0]+1:empty_col_index[1]]
+        df3 = df.iloc[:, empty_col_index[1]+2:empty_col_index[2]]
+        df4 = df.iloc[:, empty_col_index[2]+1:empty_col_index[3]]
+
+    df1.columns = df1.iloc[0, :].values
+    df2.columns = df2.iloc[0, :].values
+    df3.columns = df3.iloc[0, :].values
+    df4.columns = df4.iloc[0, :].values
+    df1.drop(axis=0, index=0, inplace=True)
+    df2.drop(axis=0, index=0, inplace=True)
+    df3.drop(axis=0, index=0, inplace=True)
+    df4.drop(axis=0, index=0, inplace=True)
+
+    return df1, df2, df3, df4
 
 
 @st.cache_data(ttl=300, show_spinner=False)
@@ -34,15 +51,8 @@ def concatenar_planliha_de_custos_faturamento() -> pd.DataFrame:
     meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro' ]
     month_index = datetime.datetime.today().month - 1
     with st.spinner('Acessando planilhas'):
-        faturamento = pegar_planilha(spreadsheet=os.environ.get('NOME_PLANILHA_FATURAMENTO'), worksheet='Cadastro de Emissoes')
-        custo = pegar_planilha(spreadsheet=os.environ.get('NOME_PLANILHA_CUSTO'), worksheet='Fornecedores')
-        voltas = pegar_planilha(spreadsheet=os.environ.get('NOME_PLANILHA_VOLTAS'), worksheet='2024')
-        df_debitos = pegar_planilha(spreadsheet=os.environ.get('NOME_PLANILHA_DEBITOS'), worksheet='Debitos').dropna(how='all')
-        voltas_ = pd.DataFrame()
-        for mes in range(0, month_index+1):
-            try: df = pegar_planilha(spreadsheet=os.environ.get('NOME_PLANILHA_VOLTAS'), worksheet=meses[mes]).dropna(subset='Data')
-            except:continue
-            else: voltas_ = pd.concat([voltas_, df], ignore_index=True)
+        df = pegar_planilha(spreadsheet='Dashbord SpeedMilhas', worksheet='Página1')
+        faturamento, custo, voltas, df_debitos = separar_dataframes(df)
     # EDITANDO FATURAMENTO
     faturamento.rename(columns={'Carimbo de data/hora': 'Data da Emissao', 'Valor total da venda\n': 'Total Venda', 'Quantidade de Passageiros': 'CPFs', 'Taxas De Embarque em REAL ( Dolar e Euro converter para real )': 'Taxas De Embarque', 'Quem Emitiu': 'Emitido por'}, inplace=True)
     faturamento.dropna(subset='Localizador', inplace=True)
@@ -62,8 +72,8 @@ def concatenar_planliha_de_custos_faturamento() -> pd.DataFrame:
     custo.drop_duplicates(subset='Localizador', keep='last', inplace=True)
     custo.set_index('Localizador', inplace=True)
     ## PEGANDO VOLTAS E EDITANDO DF
-    voltas = pd.concat([voltas, voltas_])
-    voltas.rename(columns={'Data': 'Data da Emissao', 'Venda Realizada para': 'Cliente', 'Custo total':'Total Custo', 'Venda total':'Total Venda'}, inplace=True)
+    #voltas = pd.concat([voltas, voltas_])
+    voltas.rename(columns={'Data': 'Data da Emissao', 'Venda Realizada para': 'Cliente', 'Custo total':'Total Custo', 'Venda total':'Total Venda', 'Reserva': 'Localizador'}, inplace=True)
     voltas.loc[:, 'Data da Emissao'] = pd.to_datetime(voltas['Data da Emissao'], errors='coerce', format='%d/%m/%Y')
     voltas.loc[:, 'Custo/cpf'] =pd.to_numeric(voltas['Custo/cpf'], errors='coerce')
     voltas.loc[:, 'CPFs'] =pd.to_numeric(voltas['CPFs'], errors='coerce')
@@ -88,6 +98,7 @@ def concatenar_planliha_de_custos_faturamento() -> pd.DataFrame:
     df['Lucro'] = df['Total Venda'] - df['Total Custo']
     df.loc[:, 'Cia'] = df['Cia'].apply(lambda x: str(x).title().strip())
     df.loc[:, 'Cliente'] = df['Cliente'].apply(lambda x: str(x).title().strip())
+    df_debitos.dropna(how='all', inplace=True)
     return df, df_debitos
 
 @st.cache_data(ttl=600, show_spinner=False)

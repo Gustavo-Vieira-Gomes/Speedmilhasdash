@@ -169,7 +169,7 @@ def metricas_voltas_canceladas(df: pd.DataFrame):
 
 
 def debitos_clientes(df: pd.DataFrame):
-    df.loc[:, 'Debito'] = df.loc[:, 'Debito'].round(2)
+    df.loc[:, 'Debito'] = df.loc[:, 'Debito'].apply(lambda x: round(x, 2))
     fig = create_pie_chart(df['Cliente'], df['Debito'], height=280, annotation_func=lambda x: f'R${x.sum():0,.2f}'.replace('.', '*').replace(',', '.').replace('*', ','))
     with st.container(border=True):
         st.markdown("<h3 style='text-align: center;'>Total de Débitos dos Clientes:</h3>", unsafe_allow_html=True)

@@ -4,7 +4,7 @@ import pandas as pd
 
 def filter_data(df: pd.DataFrame, date_range, client_filter, airline_filter, service_type=None):
     """Filtra os dados com base nos parâmetros fornecidos."""
-    df_filtered = df[(df['Data da Emissao'].dt.date >= date_range[0]) & (df['Data da Emissao'].dt.date <= date_range[1])]
+    df_filtered = df[(df['Data da Emissao'].dt.date >= date_range[0]) & (df['Data da Emissao'].dt.date < date_range[1])]
     
     if service_type and service_type != 'Geral':
         df_filtered = df_filtered[df_filtered['Tipo'] == service_type]
