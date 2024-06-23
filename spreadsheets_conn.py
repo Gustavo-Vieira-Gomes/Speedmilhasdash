@@ -51,7 +51,7 @@ def concatenar_planliha_de_custos_faturamento() -> pd.DataFrame:
     meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro' ]
     month_index = datetime.datetime.today().month - 1
     with st.spinner('Acessando planilhas'):
-        df = pegar_planilha(spreadsheet='Dashbord SpeedMilhas', worksheet='Página1')
+        df = pegar_planilha(spreadsheet=os.environ.get('NOME_PLANILHA_GERAL'), worksheet=os.environ.get('NOME_ABA_GERAL'))
         faturamento, custo, voltas, df_debitos = separar_dataframes(df)
     # EDITANDO FATURAMENTO
     faturamento.rename(columns={'Carimbo de data/hora': 'Data da Emissao', 'Valor total da venda\n': 'Total Venda', 'Quantidade de Passageiros': 'CPFs', 'Taxas De Embarque em REAL ( Dolar e Euro converter para real )': 'Taxas De Embarque', 'Quem Emitiu': 'Emitido por'}, inplace=True)
