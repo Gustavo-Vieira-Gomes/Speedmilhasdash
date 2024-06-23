@@ -20,9 +20,7 @@ def filter_data(df: pd.DataFrame, date_range, client_filter, airline_filter, ser
 
 def display_filters(df: pd.DataFrame, date_init_range: datetime.date, type_=1):
     """Exibe filtros na barra lateral."""
-    pdb.set_trace()
     date_range = st.date_input(':calendar: Período de Análise', value=[date_init_range[0], date_init_range[1]], min_value=datetime.date(2023, 6, 1), key='periodkey')
-    pdb.set_trace()
     client_options = ['GERAL'] + df['Cliente'].unique().tolist()
     airline_options = ['GERAL'] + df['Cia'].unique().tolist()
 
