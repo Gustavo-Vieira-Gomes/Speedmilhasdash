@@ -58,7 +58,7 @@ def concatenar_planliha_de_custos_faturamento() -> pd.DataFrame:
     faturamento.dropna(subset='Localizador', inplace=True)
     faturamento = faturamento[['Data da emissão', 'Cliente', 'Localizador', 'Cia', 'Quantidade de Milhas', 'Taxas De Embarque', 'Total Venda', 'CPFs', 'Emitido por', 'Quem pagou as taxas', 'Titular', 'Login', 'Senha']]
     faturamento.drop_duplicates(subset='Localizador',keep='last', inplace=True)
-    faturamento.loc[:, 'Data da emissão'] = pd.to_datetime(faturamento['Data da emissão'], errors='coerce', format='%d/%m/%Y %H:%M:%S')
+    faturamento.loc[:, 'Data da emissão'] = pd.to_datetime(faturamento['Data da emissão'], errors='coerce', format='%d/%m/%Y')
     faturamento.loc[:, 'Total Venda'] = pd.to_numeric(faturamento['Total Venda'], errors='coerce')
     faturamento.loc[:, 'CPFs'] = pd.to_numeric(faturamento['CPFs'], errors='coerce')
     faturamento.fillna({'CPFs': 1}, inplace=True)

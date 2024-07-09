@@ -87,7 +87,7 @@ def formulario_de_cadastro():
                 verificar_input_de_dados(
                     obrigatorios=[data_cadastro.strftime('%d/%m/%Y %H:%M:%S'), cliente, data_ida.strftime('%d/%m/%Y'), data_volta, localizador, cia_aerea, quantidade_milhas, taxa_embarque,
                             quem_pagou_as_taxas, titular, login, senha, emissor, forma_de_pagamento, user, valor_total, valor_pago_no_cartao, quantidade_passageiros, milheiro, fomos_pagos],
-                    values=[data_cadastro.strftime('%d/%m/%Y %H:%M:%S'), cliente, data_ida.strftime('%d/%m/%Y'), data_volta, localizador, cia_aerea, quantidade_milhas, taxa_embarque,
+                    values=[data_cadastro.strftime('%d/%m/%Y %H:%M:%S'), data_cadastro.strftime('%d/%m/%Y'), cliente, data_ida.strftime('%d/%m/%Y'), data_volta, localizador, cia_aerea, quantidade_milhas, taxa_embarque,
                             quem_pagou_as_taxas, titular, login, senha, emissor, forma_de_pagamento, user, valor_total, valor_pago_no_cartao, quantidade_passageiros, milheiro, fomos_pagos, observacoes],
                     planilha=st.session_state['tipo de cadastro']
                 )
@@ -122,6 +122,6 @@ def formulario_de_cadastro():
                 pagamento_conferido = 'Sim' if pagamento_conferido else 'Não'
                 verificar_input_de_dados(
                     obrigatorios=[data_cadastro.strftime('%d/%m/%Y %H:%M:%S'), conta, custo_por_cpf, quantidade_passageiros, valor_da_venda_por_cpf, cliente, emissor, cartao, valor_pago_no_cartao, pagamento_conferido, localizador, sobrenome_passageiro, data_hora_chegada, status, custo_total, venda_total],
-                    values=[data_cadastro.strftime('%d/%m/%Y %H:%M:%S'), conta, custo_por_cpf, quantidade_passageiros, valor_da_venda_por_cpf, cliente, emissor, cartao, valor_pago_no_cartao, pagamento_conferido, localizador, sobrenome_passageiro, data_hora_chegada, status, observacoes, '', custo_total, venda_total],
+                    values=[data_cadastro.strftime('%d/%m/%Y %H:%M:%S'), data_cadastro.strftime('%d/%m/%Y'), conta, custo_por_cpf, quantidade_passageiros, valor_da_venda_por_cpf, cliente, emissor, cartao, valor_pago_no_cartao, pagamento_conferido, localizador, sobrenome_passageiro, data_hora_chegada, status, observacoes, '', custo_total, venda_total],
                     planilha=st.session_state['tipo de cadastro']
                 )
