@@ -54,20 +54,20 @@ def concatenar_planliha_de_custos_faturamento() -> pd.DataFrame:
         df = pegar_planilha(spreadsheet=os.environ.get('NOME_PLANILHA_GERAL'), worksheet=os.environ.get('NOME_ABA_GERAL'))
         faturamento, custo, voltas, df_debitos = separar_dataframes(df)
     # EDITANDO FATURAMENTO
-    faturamento.rename(columns={'Valor total da venda\n': 'Total Venda', 'Quantidade de Passageiros': 'CPFs', 'Taxas De Embarque em REAL ( Dolar e Euro converter para real )': 'Taxas De Embarque', 'Quem Emitiu': 'Emitido por'}, inplace=True)
+    faturamento.rename(columns={'Data da emissão': 'Data da Emissao', 'Valor total da venda\n': 'Total Venda', 'Quantidade de Passageiros': 'CPFs', 'Taxas De Embarque em REAL ( Dolar e Euro converter para real )': 'Taxas De Embarque', 'Quem Emitiu': 'Emitido por'}, inplace=True)
     faturamento.dropna(subset='Localizador', inplace=True)
-    faturamento = faturamento[['Data da emissão', 'Cliente', 'Localizador', 'Cia', 'Quantidade de Milhas', 'Taxas De Embarque', 'Total Venda', 'CPFs', 'Emitido por', 'Quem pagou as taxas', 'Titular', 'Login', 'Senha']]
+    faturamento = faturamento[['Data da Emissao', 'Cliente', 'Localizador', 'Cia', 'Quantidade de Milhas', 'Taxas De Embarque', 'Total Venda', 'CPFs', 'Emitido por', 'Quem pagou as taxas', 'Titular', 'Login', 'Senha']]
     faturamento.drop_duplicates(subset='Localizador',keep='last', inplace=True)
-    faturamento.loc[:, 'Data da emissão'] = pd.to_datetime(faturamento['Data da emissão'], errors='coerce', format='%d/%m/%Y')
+    faturamento.loc[:, 'Data da Emissao'] = pd.to_datetime(faturamento['Data da Emissao'], errors='coerce', format='%d/%m/%Y')
     faturamento.loc[:, 'Total Venda'] = pd.to_numeric(faturamento['Total Venda'], errors='coerce')
     faturamento.loc[:, 'CPFs'] = pd.to_numeric(faturamento['CPFs'], errors='coerce')
     faturamento.fillna({'CPFs': 1}, inplace=True)
-    faturamento.dropna(subset=['Total Venda', 'Data da emissão', 'Cliente', 'Cia'], inplace=True)
+    faturamento.dropna(subset=['Total Venda', 'Data da Emissao', 'Cliente', 'Cia'], inplace=True)
     faturamento.set_index('Localizador', inplace=True)
     ## PEGANDO CUSTO E EDITANDO DF
     custo.rename(columns={'TotalMilhas+Taxas':'Total Custo'}, inplace=True)
     custo = custo[['Localizador', 'Total Custo']]
-    custo.loc['Total Custo'] = pd.to_numeric(custo['Total Custo'], errors='coerce')
+    custo.loc[:, 'Total Custo'] = pd.to_numeric(custo['Total Custo'], errors='coerce')
     custo.dropna(inplace=True)
     custo.drop_duplicates(subset='Localizador', keep='last', inplace=True)
     custo.set_index('Localizador', inplace=True)
@@ -75,8 +75,8 @@ def concatenar_planliha_de_custos_faturamento() -> pd.DataFrame:
     #voltas = pd.concat([voltas, voltas_])
     voltas.rename(columns={'Data': 'Data da Emissao', 'Venda Realizada para': 'Cliente', 'Custo total':'Total Custo', 'Venda total':'Total Venda', 'Reserva': 'Localizador'}, inplace=True)
     voltas.loc[:, 'Data da Emissao'] = pd.to_datetime(voltas['Data da Emissao'], errors='coerce', format='%d/%m/%Y')
-    voltas.loc[:, 'Custo/cpf'] =pd.to_numeric(voltas['Custo/cpf'], errors='coerce')
-    voltas.loc[:, 'CPFs'] =pd.to_numeric(voltas['CPFs'], errors='coerce')
+    voltas.loc[:, 'Custo/cpf'] = pd.to_numeric(voltas['Custo/cpf'], errors='coerce')
+    voltas.loc[:, 'CPFs'] = pd.to_numeric(voltas['CPFs'], errors='coerce')
     voltas.loc[:, 'Valor Venda'] = pd.to_numeric(voltas['Valor Venda'], errors='coerce')
     voltas.loc[:, 'Total Custo'] = pd.to_numeric(voltas['Total Custo'], errors='coerce')
     voltas.loc[:, 'Total Venda'] = pd.to_numeric(voltas['Total Venda'], errors='coerce')

@@ -15,7 +15,7 @@ def ver_emissions():
     </style>
     """, unsafe_allow_html=True)
 
-    df = concatenar_planliha_de_custos_faturamento()
+    df = concatenar_planliha_de_custos_faturamento()[0]
     sidebar_ver_emissoes(df, st.session_state['date_init_range'])
     df_final = st.session_state['searched_df']
     st.header('Emissões Cadastradas')
