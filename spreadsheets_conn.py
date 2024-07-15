@@ -6,12 +6,12 @@ import os
 import toml
 import json
 
-@st.cache_data(show_spinner=False)
-def cria_secrets_file():
-    with open('/app/.streamlit/secrets.toml', 'w+') as tom_file:
-        dict_ = os.environ.get('secrets')
-        dict_ = json.loads(dict_)
-        toml.dump(dict_, tom_file)
+#@st.cache_data(show_spinner=False)
+#def cria_secrets_file():
+#    with open('/app/.streamlit/secrets.toml', 'w+') as tom_file:
+#        dict_ = os.environ.get('secrets')
+#        dict_ = json.loads(dict_)
+#        toml.dump(dict_, tom_file)
 
 
 def pegar_planilha(worksheet: str, spreadsheet: str) -> pd.DataFrame:
@@ -51,7 +51,7 @@ def concatenar_planliha_de_custos_faturamento() -> pd.DataFrame:
     meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro' ]
     month_index = datetime.datetime.today().month - 1
     with st.spinner('Acessando planilhas'):
-        df = pegar_planilha(spreadsheet=os.environ.get('NOME_PLANILHA_GERAL'), worksheet=os.environ.get('NOME_ABA_GERAL'))
+        df = pegar_planilha(spreadsheet=st.secrets.get('NOME_PLANILHA_GERAL'), worksheet=st.secrets.get('NOME_ABA_GERAL'))
         faturamento, custo, voltas, df_debitos = separar_dataframes(df)
     # EDITANDO FATURAMENTO
     faturamento.rename(columns={'Data da emissão': 'Data da Emissao', 'Valor total da venda\n': 'Total Venda', 'Quantidade de Passageiros': 'CPFs', 'Taxas De Embarque em REAL ( Dolar e Euro converter para real )': 'Taxas De Embarque', 'Quem Emitiu': 'Emitido por'}, inplace=True)
@@ -106,7 +106,7 @@ def pesquisar_logins():
     df_options = {'usernames':{}}
     conn = st.connection('emissionsconnect', type=GSheetsConnection)
     with st.spinner('Pegando os logins...'):
-        df = conn.read(spreadsheet=os.environ.get('NOME_PLANILHA_LOGINS'), worksheet='logins', ttl=3600)
+        df = conn.read(spreadsheet=st.secrets.get('NOME_PLANILHA_LOGINS'), worksheet='logins', ttl=3600)
     try:
         df.drop(df.columns[df.columns.str.contains('unnamed',case = False)],axis = 1, inplace = True)
         df.dropna(inplace=True)
