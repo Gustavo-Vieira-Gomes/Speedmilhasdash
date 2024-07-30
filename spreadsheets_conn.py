@@ -54,7 +54,7 @@ def concatenar_planliha_de_custos_faturamento() -> pd.DataFrame:
         df = pegar_planilha(spreadsheet=st.secrets.get('NOME_PLANILHA_GERAL'), worksheet=st.secrets.get('NOME_ABA_GERAL'))
         faturamento, custo, voltas, df_debitos = separar_dataframes(df)
     # EDITANDO FATURAMENTO
-    faturamento.rename(columns={'Data de Emissao': 'Data da Emissao', 'Valor total da venda\n': 'Total Venda', 'Quantidade de Passageiros': 'CPFs', 'Taxas De Embarque em REAL ( Dolar e Euro converter para real )': 'Taxas De Embarque', 'Quem Emitiu': 'Emitido por'}, inplace=True)
+    faturamento.rename(columns={'Data da emissão': 'Data da Emissao', 'Valor total da venda\n': 'Total Venda', 'Quantidade de Passageiros': 'CPFs', 'Taxas De Embarque em REAL ( Dolar e Euro converter para real )': 'Taxas De Embarque', 'Quem Emitiu': 'Emitido por'}, inplace=True)
     faturamento.dropna(subset='Localizador', inplace=True)
     faturamento = faturamento[['Data da Emissao', 'Cliente', 'Localizador', 'Cia', 'Quantidade de Milhas', 'Taxas De Embarque', 'Total Venda', 'CPFs', 'Emitido por', 'Quem pagou as taxas', 'Titular', 'Login', 'Senha']]
     faturamento.drop_duplicates(subset='Localizador',keep='last', inplace=True)
