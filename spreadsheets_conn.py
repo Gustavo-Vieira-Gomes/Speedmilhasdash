@@ -6,13 +6,6 @@ import os
 import toml
 import json
 
-#@st.cache_data(show_spinner=False)
-#def cria_secrets_file():
-#    with open('/app/.streamlit/secrets.toml', 'w+') as tom_file:
-#        dict_ = os.environ.get('secrets')
-#        dict_ = json.loads(dict_)
-#        toml.dump(dict_, tom_file)
-
 
 def pegar_planilha(worksheet: str, spreadsheet: str) -> pd.DataFrame:
     conn = st.connection('emissionsconnect', type=GSheetsConnection)
@@ -32,17 +25,20 @@ def separar_dataframes(df:pd.DataFrame):
         df2 = df.iloc[:, empty_col_index[0]+1:empty_col_index[1]]
         df3 = df.iloc[:, empty_col_index[1]+2:empty_col_index[2]]
         df4 = df.iloc[:, empty_col_index[2]+1:empty_col_index[3]]
+        df5 = df.iloc[:, empty_col_index[3]+1:empty_col_index[4]]
 
     df1.columns = df1.iloc[0, :].values
     df2.columns = df2.iloc[0, :].values
     df3.columns = df3.iloc[0, :].values
     df4.columns = df4.iloc[0, :].values
+    df5.columns = df5.iloc[0, :].values
     df1.drop(axis=0, index=0, inplace=True)
     df2.drop(axis=0, index=0, inplace=True)
     df3.drop(axis=0, index=0, inplace=True)
     df4.drop(axis=0, index=0, inplace=True)
+    df5.drop(axis=0, index=0, inplace=True)
 
-    return df1, df2, df3, df4
+    return df1, df2, df3, df4, df5
 
 
 @st.cache_data(ttl=300, show_spinner=False)
@@ -52,7 +48,7 @@ def concatenar_planliha_de_custos_faturamento() -> pd.DataFrame:
     month_index = datetime.datetime.today().month - 1
     with st.spinner('Acessando planilhas'):
         df = pegar_planilha(spreadsheet=st.secrets.get('NOME_PLANILHA_GERAL'), worksheet=st.secrets.get('NOME_ABA_GERAL'))
-        faturamento, custo, voltas, df_debitos = separar_dataframes(df)
+        faturamento, custo, voltas, df_debitos, df_debitos_speedmilhas = separar_dataframes(df)
     # EDITANDO FATURAMENTO
     faturamento.rename(columns={'Data da emissão': 'Data da Emissao', 'Valor total da venda\n': 'Total Venda', 'Quantidade de Passageiros': 'CPFs', 'Taxas De Embarque em REAL ( Dolar e Euro converter para real )': 'Taxas De Embarque', 'Quem Emitiu': 'Emitido por'}, inplace=True)
     faturamento.dropna(subset='Localizador', inplace=True)
@@ -99,7 +95,9 @@ def concatenar_planliha_de_custos_faturamento() -> pd.DataFrame:
     df.loc[:, 'Cia'] = df['Cia'].apply(lambda x: str(x).title().strip())
     df.loc[:, 'Cliente'] = df['Cliente'].apply(lambda x: str(x).title().strip())
     df_debitos.dropna(how='all', inplace=True)
-    return df, df_debitos
+    df_debitos_speedmilhas.dropna(how='all', inplace=True)
+    df_debitos_speedmilhas.fillna({'Clientes': '-', 'Debito': 0}, inplace=True)
+    return df, df_debitos, df_debitos_speedmilhas
 
 @st.cache_data(ttl=600, show_spinner=False)
 def pesquisar_logins():

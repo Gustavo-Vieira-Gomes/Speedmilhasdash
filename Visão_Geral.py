@@ -169,14 +169,23 @@ def metricas_voltas_canceladas(df: pd.DataFrame):
 
 
 def debitos_clientes(df: pd.DataFrame):
+    df.iloc[:, 1] = df.iloc[:, 1].apply(lambda x: round(x, 2))
+    fig = create_pie_chart(df.iloc[:, 0], df.iloc[:, 1], height=280, annotation_func=lambda x: f'R${x.sum():0,.2f}'.replace('.', '*').replace(',', '.').replace('*', ','))
+    st.markdown("<h3 style='text-align: center;'>Total de Débitos dos Clientes:</h3>", unsafe_allow_html=True)
+    if not df.empty and df['Debito'].sum() != 0:
+        fig = st.plotly_chart(fig, config={'displayModeBar': False}, use_container_width=True)
+    else:
+        st.write('Nenhum débito de clientes no momento!')
+
+
+def debitos_speedmilhas(df: pd.DataFrame):
     df.loc[:, 'Debito'] = df.loc[:, 'Debito'].apply(lambda x: round(x, 2))
-    fig = create_pie_chart(df['Cliente'], df['Debito'], height=280, annotation_func=lambda x: f'R${x.sum():0,.2f}'.replace('.', '*').replace(',', '.').replace('*', ','))
-    with st.container(border=True):
-        st.markdown("<h3 style='text-align: center;'>Total de Débitos dos Clientes:</h3>", unsafe_allow_html=True)
-        if not df.empty and df['Debito'].sum() != 0:
-            fig = st.plotly_chart(fig, config={'displayModeBar': False}, use_container_width=True)
-        else:
-            st.write('Nenhuma milha utilizada dentro dos filtros inseridos')
+    fig = create_pie_chart(df.iloc[:, 0], df.iloc[:, 1], height=280, annotation_func=lambda x: f'R${x.sum():0,.2f}'.replace('.', '*').replace(',', '.').replace('*', ','))
+    st.markdown("<h3 style='text-align: center;'>Total de Débitos da Speedmilhas:</h3>", unsafe_allow_html=True)
+    if not df.empty and df['Debito'].sum() != 0:
+        fig = st.plotly_chart(fig, config={'displayModeBar': False}, use_container_width=True)
+    else:
+        st.write('Nenhum débito da speedmilhas no momento!')
 
 
 def visao_geral():
@@ -214,5 +223,10 @@ def visao_geral():
             ranking_das_cias(st.session_state['filtered_df'])
         # Exibindo gráficos e tabelas
         with coluna2:
-            debitos_clientes(st.session_state['df_debitos'])
+            with st.container(border=True):
+                tab_debitos_clientes, tab_debitos_speedmilhas = st.tabs(['Débitos dos Clientes', 'Débitos da Speedmilhas'])
+                with tab_debitos_clientes:
+                    debitos_clientes(st.session_state['df_debitos'])
+                with tab_debitos_speedmilhas:
+                    debitos_speedmilhas(st.session_state['df_debitos_speedmilhas'])
             fat_total_pie_charts(st.session_state['filtered_df'])

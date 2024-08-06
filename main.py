@@ -5,11 +5,7 @@ from cadastrar_emissao import formulario_de_cadastro
 from ver_emissoes import ver_emissions
 import datetime
 from spreadsheets_conn import *
-#import dotenv
 
-#dotenv.load_dotenv()
-
-#cria_secrets_file()
 
 COOKIE_EXPIRY_DAYS = 180
 
@@ -32,7 +28,7 @@ def authenticate_user():
     }), authenticator
 
 def load_data():
-    st.session_state['df'], st.session_state['df_debitos'] = concatenar_planliha_de_custos_faturamento()
+    st.session_state['df'], st.session_state['df_debitos'], st.session_state['df_debitos_speedmilhas'] = concatenar_planliha_de_custos_faturamento()
 
 def initialize_session_state():
     if 'date_init_range' not in st.session_state:
