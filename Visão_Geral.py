@@ -3,6 +3,7 @@ import plotly.graph_objects as go
 import pandas as pd
 import datetime
 from sidebar import sidebar_visao_geral
+import plotly.express as px
 
 
 def create_pie_chart(labels, values, hole=0.4, height=200, annotation_func=lambda x: f'{int(x.sum()):0,}'.replace('.', '*').replace(',', '.').replace('*', ',')):
@@ -75,14 +76,13 @@ def fat_total_pie_charts(df:pd.DataFrame):
     """
     Exibe o total de milhas usadas em gráfico de pizza.
     """
-    with st.container(border=True):
-        st.markdown("<h3 style='text-align: center;'>Total de Milhas Usadas:</h3>", unsafe_allow_html=True)
-        if not df.empty:
-            df = df[df['Cia'] != 'Não identificada']
-            fig = create_pie_chart(df['Cia'], df['Quantidade de Milhas'], height=280)
-            st.plotly_chart(fig, config={'displayModeBar': False}, use_container_width=True)
-        else:
-            st.write('Nenhuma milha utilizada dentro dos filtros inseridos')
+    st.markdown("<h3 style='text-align: center;'>Total de Milhas Usadas:</h3>", unsafe_allow_html=True)
+    if not df.empty:
+        df = df[df['Cia'] != 'Não identificada']
+        fig = create_pie_chart(df['Cia'], df['Quantidade de Milhas'], height=280)
+        st.plotly_chart(fig, config={'displayModeBar': False}, use_container_width=True)
+    else:
+        st.write('Nenhuma milha utilizada dentro dos filtros inseridos')
 
 
 def ranking_das_cias(df: pd.DataFrame):
@@ -188,6 +188,34 @@ def debitos_speedmilhas(df: pd.DataFrame):
         st.write('Nenhum débito da speedmilhas no momento!')
 
 
+def sunburst_estoque(df: pd.DataFrame, height):
+    st.markdown("<h3 style='text-align: center;'>Milhas em Estoque:</h3>", unsafe_allow_html=True)
+    fig = px.sunburst(
+    df,
+    names='Conta',
+    values='Saldo Milhas',
+    path=['Conta', 'Saldo Milhas', 'Saldo Reais Formatado'],
+    hover_data={
+        'Conta': True,
+        'Saldo Milhas': ':,',  # Formatar milhas com separador de milhar
+        'Saldo Reais': ':.2f'  # Formatar reais com duas casas decimais
+        }
+    )
+    fig.update_traces(
+        hovertemplate='<b>%{customdata[0]}</b><br>Saldo Milhas: %{customdata[1]:,}<br>Saldo Reais: R$ %{customdata[2]:,.2f}'
+    )
+
+    fig.update_layout(
+        margin={'t': 0, 'l': 0, 'r': 0, 'b': 20, 'pad': 0},
+        height=height
+    )
+
+    if not df.empty and df['Saldo Milhas'].sum() != 0 and df['Saldo Reais'].sum() != 0:
+        fig = st.plotly_chart(fig, config={'displayModeBar': False}, use_container_width=True)
+    else:
+        st.write('Nada no estoque no momento!')
+
+
 def visao_geral():
     """
     Exibe a visão geral do dashboard.
@@ -229,4 +257,10 @@ def visao_geral():
                     debitos_clientes(st.session_state['df_debitos'])
                 with tab_debitos_speedmilhas:
                     debitos_speedmilhas(st.session_state['df_debitos_speedmilhas'])
-            fat_total_pie_charts(st.session_state['filtered_df'])
+
+            with st.container(border=True):
+                tab_estoque, tab_milhas_usadas = st.tabs(['Milhas em Estoque', 'Milhas Usadas'])
+                with tab_estoque:
+                    sunburst_estoque(st.session_state['df_estoque'], 280)
+                with tab_milhas_usadas:
+                    fat_total_pie_charts(st.session_state['filtered_df'])

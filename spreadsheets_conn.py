@@ -26,19 +26,22 @@ def separar_dataframes(df:pd.DataFrame):
         df3 = df.iloc[:, empty_col_index[1]+2:empty_col_index[2]]
         df4 = df.iloc[:, empty_col_index[2]+1:empty_col_index[3]]
         df5 = df.iloc[:, empty_col_index[3]+1:empty_col_index[4]]
+        df6 = df.iloc[:, empty_col_index[4]+1:empty_col_index[5]]
 
     df1.columns = df1.iloc[0, :].values
     df2.columns = df2.iloc[0, :].values
     df3.columns = df3.iloc[0, :].values
     df4.columns = df4.iloc[0, :].values
     df5.columns = df5.iloc[0, :].values
+    df6.columns = df6.iloc[0, :].values
     df1.drop(axis=0, index=0, inplace=True)
     df2.drop(axis=0, index=0, inplace=True)
     df3.drop(axis=0, index=0, inplace=True)
     df4.drop(axis=0, index=0, inplace=True)
     df5.drop(axis=0, index=0, inplace=True)
+    df6.drop(axis=0, index=0, inplace=True)
 
-    return df1, df2, df3, df4, df5
+    return df1, df2, df3, df4, df5, df6
 
 
 @st.cache_data(ttl=300, show_spinner=False)
@@ -48,7 +51,7 @@ def concatenar_planliha_de_custos_faturamento() -> pd.DataFrame:
     month_index = datetime.datetime.today().month - 1
     with st.spinner('Acessando planilhas'):
         df = pegar_planilha(spreadsheet=st.secrets.get('NOME_PLANILHA_GERAL'), worksheet=st.secrets.get('NOME_ABA_GERAL'))
-        faturamento, custo, voltas, df_debitos, df_debitos_speedmilhas = separar_dataframes(df)
+        faturamento, custo, voltas, df_debitos, df_debitos_speedmilhas, df_estoque = separar_dataframes(df)
     # EDITANDO FATURAMENTO
     faturamento.rename(columns={'Data da emissão': 'Data da Emissao', 'Valor total da venda\n': 'Total Venda', 'Quantidade de Passageiros': 'CPFs', 'Taxas De Embarque em REAL ( Dolar e Euro converter para real )': 'Taxas De Embarque', 'Quem Emitiu': 'Emitido por'}, inplace=True)
     faturamento.dropna(subset='Localizador', inplace=True)
@@ -97,7 +100,11 @@ def concatenar_planliha_de_custos_faturamento() -> pd.DataFrame:
     df_debitos.dropna(how='all', inplace=True)
     df_debitos_speedmilhas.dropna(how='all', inplace=True)
     df_debitos_speedmilhas.fillna({'Clientes': '-', 'Debito': 0}, inplace=True)
-    return df, df_debitos, df_debitos_speedmilhas
+    df_estoque.dropna(how='all', inplace=True)
+    df_estoque.dropna(axis=0, inplace=True)
+    df_estoque['Saldo Reais Formatado'] = df_estoque['Saldo Reais'].apply(lambda x: f'R$ {x:,.2f}')
+    df_estoque['Saldo Milhas'] = df_estoque['Saldo Milhas'].astype('int64')
+    return df, df_debitos, df_debitos_speedmilhas, df_estoque
 
 @st.cache_data(ttl=600, show_spinner=False)
 def pesquisar_logins():
