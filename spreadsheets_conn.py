@@ -102,8 +102,7 @@ def concatenar_planliha_de_custos_faturamento() -> pd.DataFrame:
     df_debitos_speedmilhas.fillna({'Clientes': '-', 'Debito': 0}, inplace=True)
     df_estoque.dropna(how='all', inplace=True)
     df_estoque.dropna(axis=0, inplace=True)
-    df_estoque['Saldo Reais Formatado'] = df_estoque['Saldo Reais'].apply(lambda x: f'R$ {x:,.2f}')
-    df_estoque['Saldo Milhas'] = df_estoque['Saldo Milhas'].astype('int64')
+
     return df, df_debitos, df_debitos_speedmilhas, df_estoque
 
 @st.cache_data(ttl=600, show_spinner=False)

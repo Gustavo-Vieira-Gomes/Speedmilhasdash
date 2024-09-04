@@ -188,30 +188,23 @@ def debitos_speedmilhas(df: pd.DataFrame):
         st.write('Nenhum débito da speedmilhas no momento!')
 
 
-def sunburst_estoque(df: pd.DataFrame, height):
+def table_estoque(df: pd.DataFrame, height):
     st.markdown("<h3 style='text-align: center;'>Milhas em Estoque:</h3>", unsafe_allow_html=True)
-    fig = px.sunburst(
-    df,
-    names='Conta',
-    values='Saldo Milhas',
-    path=['Conta', 'Saldo Milhas', 'Saldo Reais Formatado'],
-    hover_data={
-        'Conta': True,
-        'Saldo Milhas': ':,',  # Formatar milhas com separador de milhar
-        'Saldo Reais': ':.2f'  # Formatar reais com duas casas decimais
-        }
-    )
-    fig.update_traces(
-        hovertemplate='<b>%{customdata[0]}</b><br>Saldo Milhas: %{customdata[1]:,}<br>Saldo Reais: R$ %{customdata[2]:,.2f}'
-    )
-
-    fig.update_layout(
-        margin={'t': 0, 'l': 0, 'r': 0, 'b': 20, 'pad': 0},
-        height=height
-    )
+    
 
     if not df.empty and df['Saldo Milhas'].sum() != 0 and df['Saldo Reais'].sum() != 0:
-        fig = st.plotly_chart(fig, config={'displayModeBar': False}, use_container_width=True)
+
+        df['Saldo Milhas'] = df['Saldo Milhas'].apply(lambda x: f'{int(x):,}'.replace(',', '_').replace('.', ',').replace('_', '.'))
+        df['Saldo Reais'] = df['Saldo Reais'].apply(lambda x: f'R$ {x:,.2f}'.replace(',', '_').replace('.', ',').replace('_', '.'))
+
+        st.dataframe(df, use_container_width=True, 
+                    column_config={
+                        'Conta': st.column_config.TextColumn('Cia'),
+                        'Saldo Milhas': st.column_config.Column('Nº Milhas'),
+                        'Saldo Reais': st.column_config.TextColumn('Valor em Reais')
+                    },
+                    hide_index=True,
+                    column_order=['Conta', 'Saldo Milhas', 'Saldo Reais'])
     else:
         st.write('Nada no estoque no momento!')
 
@@ -245,7 +238,7 @@ def visao_geral():
     else:
         fat_evolution_chart(st.session_state['df'])
 
-        coluna1, coluna2 = st.columns([0.6, 0.4])
+        coluna1, coluna2 = st.columns([0.5, 0.5])
         with coluna1:
             clientes_sem_emitir(st.session_state['df'])
             ranking_das_cias(st.session_state['filtered_df'])
@@ -261,6 +254,6 @@ def visao_geral():
             with st.container(border=True):
                 tab_estoque, tab_milhas_usadas = st.tabs(['Milhas em Estoque', 'Milhas Usadas'])
                 with tab_estoque:
-                    sunburst_estoque(st.session_state['df_estoque'], 280)
+                    table_estoque(st.session_state['df_estoque'], 280)
                 with tab_milhas_usadas:
                     fat_total_pie_charts(st.session_state['filtered_df'])
